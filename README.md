@@ -11,7 +11,7 @@
 
 得到效果如下：
 
-![image-20200718210555125](C:\Users\QQ\AppData\Roaming\Typora\typora-user-images\image-20200718210555125.png)
+![image-20200718210555125](https://gitee.com/wei_hong_liang/My_Picture_Bed/raw/master/20200718211825.png)
 
 可以看到在新的特征空间中，两种标签对应的点仍然是聚集为两族的。因此PCA得出的特征有一定道理。
 
