@@ -1,10 +1,8 @@
 ## 第一问的程序
 
-### 数据预处理
-
 导入数据：
 
-```
+```mathematica
 data = Import[
    "G:\\GitHub Local \
 Repository\\Mathematical-Modeling-Campus-Competition\\\
@@ -13,7 +11,7 @@ Repository\\Mathematical-Modeling-Campus-Competition\\\
 
 数据预处理
 
-```
+```mathematica
 train = data[[1, 2 ;; All]];
 test = data[[2, 2 ;; All]];
 asso=MapThread[Rule,{train[[All,1;;7]],train[[All,8]]}][[2;;All]];
@@ -22,39 +20,39 @@ model=Classify[asso,Method->"SupportVectorMachine"];
 
 ## 主成分分析
 
-```
+```mathematica
 features=train[[All,1;;7]];
 lables=train[[All,8]];
 ```
 
 得到降维后的数据
 
-```
+```mathematica
 reduced=(KarhunenLoeveDecomposition[Transpose[features]][[1]]//Transpose)[[All,1;;2]];
 ```
 
 求出主向量
 
-```
+```mathematica
 {b, m} = KarhunenLoeveDecomposition[Transpose[features], 
    Standardized -> False];
 ```
 
 训练集在两个最主成分构成的特征空间中的分布图（有色）：
 
-```
+```mathematica
 ListPlot[{point2,point1},PlotRange->{Full,All},AxesLabel->{"第一主成分","第二主成分"},PlotLabel->"训练集在两个最主成分构成的特征空间中的分布",PlotLegends->{0,1}]
 ```
 
 计算协方差矩阵，
 
-```
+```mathematica
 Covariance[features]
 ```
 
 计算协方差矩阵的特征值
 
-```
+```mathematica
 eig=Covariance[features]//Eigenvalues;
 ```
 
@@ -62,13 +60,13 @@ eig=Covariance[features]//Eigenvalues;
 
 在某个点(x,y)处以r为窗口宽度，计算某个点群point的程序：
 
-```
+```mathematica
 count[x_,y_][r_,point_]:=(If[(x-r)<#[[1]]<(x+r)&&(y-r)<#[[2]]<(y+r),1,0]&/@point//Total)
 ```
 
 对于某个区域已经数出来的两种点的个数，我们可以这样计算明显度函数：
 
-```
+```mathematica
 Obvious[x_,y_]:=If[
 x!=0||y!=0,Abs@(x-y)/(x+y),0.3
 ]//N
@@ -76,7 +74,7 @@ x!=0||y!=0,Abs@(x-y)/(x+y),0.3
 
 计算区域上的明显度数组，
 
-```
+```mathematica
 p[r_,h_,point_]:=ParallelTable[{x,y,count[x,y][r,point]},{x,0,2.5,h},{y,0,2,h}];
 list[r_,h_]:=MapThread[{#1[[1]],#1[[2]],Obvious[#1[[3]],#2[[3]]]}&,{p[r,h,point1],p[r,h,point2]},2];
 contour=Flatten[list[0.05,0.1],1];
@@ -84,7 +82,7 @@ contour=Flatten[list[0.05,0.1],1];
 
 绘制图像：
 
-```
+```mathematica
 contour=Flatten[list[0.05,0.1],1];
 
 con=ListContourPlot[contour,PlotLegends->Automatic,Contours->10,PlotLabel->"明显度函数的等高图",FrameLabel->{"第一主特征","第二主特征"}]
@@ -94,7 +92,70 @@ lis=ListPlot[{point1,point2},PlotStyle->{Green,Red},AxesLabel->{"第一主成分
 show=Show[con,lis,PlotLabel->"点集与明显度函数对比图"]
 ```
 
-$$
+## 第三问的程序
 
-$$
+数据降维
+
+```mathematica
+transformedtest = Transpose[m.Transpose[test]][[All, 1 ;; 2]];
+```
+
+作图
+
+```mathematica
+compare = 
+ ListPlot[{point1, point2, transformedtest}, 
+  PlotStyle -> {Green, Blue, Red}, PlotLegends -> {1, 0, "测试集"}, 
+  PlotLabel -> "训练集和测试集对比", AxesLabel -> {"第一主向量", "第二主向量"}]
+  
+```
+
+### 训练线性核
+
+```mathematica
+model2 = Classify[asso2, 
+   Method -> {"SupportVectorMachine", "KernelType" -> "Linear"}];
+```
+
+作图
+
+```mathematica
+linearplot=Show[dens,ListPlot[{point1,point2},PlotStyle->{Yellow,Blue,Red},PlotLegends->{1,0}],PlotLabel->"线性核下的训练结果",FrameLabel->{"第一主向量","第二主向量"}]
+```
+
+```mathematica
+linearplot2=Show[dens,plot,PlotLabel->"线性核下的训练结果",FrameLabel->{"第一主向量","第二主向量"}]
+```
+
+### 训练RBF核
+
+```mathematica
+modelRBF=Classify[asso2,Method->{"SupportVectorMachine","KernelType"->"RadialBasisFunction"}];
+```
+
+作图
+
+```mathematica
+RBFplot=Show[dens2,ListPlot[{point1,point2},PlotStyle->{Yellow,Blue,Red},PlotLegends->{1,0}],PlotLabel->"高斯径向基函数核下的训练结果",FrameLabel->{"第一主向量","第二主向量"}]
+```
+
+```mathematica
+RBFplot2=Show[dens2,plot,PlotLabel->"高斯径向基函数核下的训练结果",FrameLabel->{"第一主向量","第二主向量"}]
+```
+
+## 训练多项式核
+
+```mathematica
+modelPolinomial=Classify[asso2,Method->{"SupportVectorMachine","KernelType"->"Polynomial"}];
+```
+
+作图
+
+```mathematica
+polynomialplot=Show[densPolinomial,ListPlot[{point1,point2},PlotStyle->{Yellow,Blue,Red},PlotLegends->{1,0}],PlotLabel->"多项式核下的训练结果",FrameLabel->{"第一主向量","第二主向量"}]
+```
+
+```mathematica
+polynomialplot2=Show[densPolinomial,plot,PlotLabel->"多项式核下的训练结果",FrameLabel->{"第一主向量","第二主向量"}]
+```
 
